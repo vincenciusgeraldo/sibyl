@@ -27,6 +27,16 @@ func (r *User) CreateUser(usr models.User) (models.User, error) {
 	return usr, nil
 }
 
+func (r *User) GetUsers() ([]models.User, error) {
+	var res []models.User
+
+	if err := r.db.C("users").Find(bson.M{}).All(&res); err != nil {
+		return []models.User{}, err
+	}
+
+	return res, nil
+}
+
 func (r *User) GetUser(usr string) (models.User, error) {
 	var res []models.User
 	q := map[string]interface{}{

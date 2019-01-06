@@ -58,7 +58,7 @@ func (h *User) userHelper(usr string) string {
 		"2. Melihat antrian _review_ mu.\n" +
 		"`/my_request`\n" +
 		"3. Melihat antrian _review_ yang butuh review kamu.\n" +
-		"`/my_review`\n" +
+		"`/my_review [requester (optional)]`\n" +
 		"4. Menandai PR sudah di _review_\n" +
 		"`/reviewed [repo] [pr_number]`\n" +
 		"5. Menandai PR sudah di _approve_\n" +
@@ -66,7 +66,9 @@ func (h *User) userHelper(usr string) string {
 		"6. Menghapus antrian _review_\n" +
 		"`/done [repo] [pr_number]`\n" +
 		"7. Meminta _review_ kembali\n" +
-		"`/up [repo] [pr_number]`\n"
+		"`/up [repo] [pr_number]`\n" +
+		"8. Menambahkan antrian _emergency review_\n" +
+		"`/add_emergency [repo] [pr_number] [reviewers]`\n"
 }
 
 func (h *User) userExist(usr string) string {

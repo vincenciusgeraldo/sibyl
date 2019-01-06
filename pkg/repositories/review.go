@@ -41,11 +41,14 @@ func (r *Review) GetReviewByRequester(usr string) ([]models.Review, error){
 	return res, nil
 }
 
-func (r *Review) GetReviewByReviewer(usr string) ([]models.Review, error) {
+func (r *Review) GetReviewByReviewer(reviewer string, requester string) ([]models.Review, error) {
 	var res []models.Review
 	q := bson.M{
-		"reviewers": bson.M{"$in": []string{usr}},
-		"approved_by": bson.M{"$nin": []string{usr}},
+		"reviewers": bson.M{"$in": []string{reviewer}},
+		"approved_by": bson.M{"$nin": []string{reviewer}},
+	}
+	if requester != "" {
+		q["requester"] = requester
 	}
 
 	if err := r.db.C("reviews").Find(q).Sort("created_at", "emergency").All(&res); err != nil {
@@ -123,8 +126,6 @@ func (r *Review) UpReview(pr int, repo string) (models.Review, error) {
 	}
 
 	res := rev[0]
-	res.ReviewedBy = []string{}
-	res.ApprovedBy = []string{}
 	res.UpdatedAt = time.Now()
 
 	if err := r.db.C("reviews").Update(q, res); err != nil {

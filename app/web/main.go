@@ -39,6 +39,7 @@ func main() {
 
 	ush := handlers.NewUserHandler(sbl)
 	rvh := handlers.NewReviewHandler(sbl)
+	adm := handlers.NewAdminHandler(sbl)
 
 	b.Handle("/start", ush.Create)
 	b.Handle("/help", ush.Help)
@@ -50,6 +51,7 @@ func main() {
 	b.Handle("/approved", rvh.Approved)
 	b.Handle("/done", rvh.Delete)
 	b.Handle("/up", rvh.Up)
+	b.Handle("/announce", adm.Announce)
 
 	b.Start()
 }

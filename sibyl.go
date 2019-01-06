@@ -41,6 +41,10 @@ func (s *Sibyl) GetUser(user string) (models.User, error) {
 	return s.usr.GetUser(user)
 }
 
+func (s *Sibyl) GetUsers() ([]models.User, error){
+	return s.usr.GetUsers()
+}
+
 func (s *Sibyl) CreateReview(rvw models.Review) (models.Review, error) {
 	return s.rvw.CreateReview(rvw)
 }
@@ -49,8 +53,8 @@ func (s *Sibyl) GetReviewByRequester(usr string) ([]models.Review, error){
 	return s.rvw.GetReviewByRequester(usr)
 }
 
-func (s *Sibyl) GetReviewByReviewer(usr string) ([]models.Review, error) {
-	return s.rvw.GetReviewByReviewer(usr)
+func (s *Sibyl) GetReviewByReviewer(reviewer string, requester string) ([]models.Review, error) {
+	return s.rvw.GetReviewByReviewer(reviewer, requester)
 }
 
 func (s *Sibyl) GetReviewBy(by interface{}) ([]models.Review, error) {

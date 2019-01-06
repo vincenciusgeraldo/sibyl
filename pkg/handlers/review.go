@@ -27,6 +27,13 @@ func (h *Review) Create(m *tb.Message) {
 		return
 	}
 
+	if usr, err := h.sbl.GetUser("@" + m.Sender.Username); err != nil {
+		h.sbl.SendMessage(m.Chat, "Terjadi kesalahan pada Sibyl. Silahkan hubungi @vgeraldo untuk masalah terkait.")
+		return
+	} else if usr.Username == "" {
+		h.sbl.SendMessage(m.Chat, "Kamu belum terdaftar sebagai pengguna Sibyl. Silahkan chat /start ke Sibyl Bot untuk mendapatkan notifikasi.")
+	}
+
 	prNumber, err := strconv.Atoi(cmd[2])
 	if err != nil {
 		h.sbl.SendMessage(m.Chat, "Silahkan coba `/add [repo] [pr_number] [list_reviewer]`")
@@ -83,7 +90,19 @@ func (h *Review) Create(m *tb.Message) {
 }
 
 func (h *Review) MyReview(m *tb.Message) {
-	res, err := h.sbl.GetReviewByReviewer("@" + m.Sender.Username)
+	cmd := strings.Split(m.Text, " ")
+	var res []models.Review
+	var err error
+
+	if len(cmd) == 1 {
+		res, err = h.sbl.GetReviewByReviewer("@" + m.Sender.Username, "")
+	} else if len(cmd) == 2 {
+		res, err = h.sbl.GetReviewByReviewer("@" + m.Sender.Username, cmd[1])
+	} else {
+		h.sbl.SendMessage(m.Chat, "Silahkan coba `/my_review [ requester (optional)]`")
+		return
+	}
+
 	if err != nil {
 		fmt.Println(err.Error())
 		h.sbl.SendMessage(m.Chat, "Terjadi kesalahan pada Sibyl. Silahkan hubungi @vgeraldo untuk masalah terkait.")
@@ -91,7 +110,7 @@ func (h *Review) MyReview(m *tb.Message) {
 	}
 
 	if len(res) == 0 {
-		h.sbl.SendMessage(m.Chat, "Anda belum memiliki antrian _review_.")
+		h.sbl.SendMessage(m.Chat, "Kamu belum memiliki antrian _review_.")
 		return
 	}
 
@@ -108,7 +127,7 @@ func (h *Review) MyRequest(m *tb.Message) {
 	}
 
 	if len(res) == 0 {
-		h.sbl.SendMessage(m.Chat, "Anda belum memiliki permintaan _review_.")
+		h.sbl.SendMessage(m.Chat, "Kamu belum memiliki permintaan _review_.")
 		return
 	}
 
@@ -218,6 +237,13 @@ func (h *Review) Up(m *tb.Message) {
 		return
 	}
 
+	if usr, err := h.sbl.GetUser("@" + m.Sender.Username); err != nil {
+		h.sbl.SendMessage(m.Chat, "Terjadi kesalahan pada Sibyl. Silahkan hubungi @vgeraldo untuk masalah terkait.")
+		return
+	} else if usr.Username == "" {
+		h.sbl.SendMessage(m.Chat, "Kamu belum terdaftar sebagai pengguna Sibyl. Silahkan chat /start ke Sibyl Bot untuk mendapatkan notifikasi.")
+	}
+
 	pr, err := strconv.Atoi(cmd[2])
 	if err != nil {
 		h.sbl.SendMessage(m.Chat, "Silahkan coba `/up [repo] [pr_number]`")
@@ -299,9 +325,9 @@ func (h *Review) buildReviewList(data []models.Review) string {
 	for _, d := range data {
 		if d.Emergency {
 			msg += "\xE2\x80\xBC *Emergency* \xE2\x80\xBC\n" +
-				fmt.Sprintf("Antrian PR `#%d %s` memerlukan _review_ secepatnya, Silahkan cek [disini](https://github.com/bukalapak/%s/pull/%d).\n", d.PRNumber, d.Repo, d.Repo, d.PRNumber)
+				fmt.Sprintf("Antrian PR `#%d %s` dari %s memerlukan _review_ secepatnya, Silahkan cek [disini](https://github.com/bukalapak/%s/pull/%d).\n", d.PRNumber, d.Repo, d.Requester, d.Repo, d.PRNumber)
 		} else {
-			msg += fmt.Sprintf("_Review_ PR `#%d %s`. Silahkan cek [disini](https://github.com/bukalapak/%s/pull/%d).\n", d.PRNumber, d.Repo, d.Repo, d.PRNumber)
+			msg += fmt.Sprintf("Antrian _review_ PR `#%d %s` dari %s. Silahkan cek [disini](https://github.com/bukalapak/%s/pull/%d).\n", d.PRNumber, d.Repo, d.Requester, d.Repo, d.PRNumber)
 		}
 		for _, r := range d.Reviewers {
 			rst := ""
@@ -310,7 +336,7 @@ func (h *Review) buildReviewList(data []models.Review) string {
 			} else if utils.ArrayInclude(d.ReviewedBy, r) {
 				rst = "`need changes` \xE2\x9D\x8C"
 			} else {
-				rst = "`not reviewed` \xE2\x9A\xAB"
+				rst = "`not reviewed`"
 			}
 			msg += fmt.Sprintf("- %s - %s\n", r, rst)
 		}
