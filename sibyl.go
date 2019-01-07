@@ -4,6 +4,7 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 	"github.com/vincenciusgeraldo/sibyl/pkg/interfaces"
 	"github.com/vincenciusgeraldo/sibyl/pkg/models"
+	"strconv"
 )
 
 type Sibyl struct {
@@ -26,7 +27,8 @@ func (s *Sibyl) BroadcastMessage(to []string, m string) error {
 		if err != nil {
 			return err
 		}
-		rc := tb.User{ID: usr.ChatId,}
+		chatId, _ := strconv.Atoi(usr.ChatId)
+		rc := tb.User{ID: chatId,}
 		s.SendMessage(&rc, m)
 	}
 
