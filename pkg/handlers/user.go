@@ -4,6 +4,7 @@ import (
 	"github.com/vincenciusgeraldo/sibyl/pkg/models"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"github.com/vincenciusgeraldo/sibyl"
+	"strconv"
 )
 
 type User struct {
@@ -16,7 +17,7 @@ func NewUserHandler(sbl *sibyl.Sibyl) *User {
 
 func (h *User) Create(m *tb.Message) {
 	user := models.User{
-		ChatId:   m.Sender.ID,
+		ChatId:   strconv.Itoa(m.Sender.ID),
 		Username: "@" + m.Sender.Username,
 		Name:     m.Sender.FirstName + " " + m.Sender.LastName,
 	}
