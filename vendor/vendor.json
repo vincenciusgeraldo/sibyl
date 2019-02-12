@@ -45,6 +45,22 @@
 			"revisionTime": "2018-10-15T13:59:52Z"
 		},
 		{
+			"checksumSHA1": "iLodGbTOwVaitTp/nKObRNbxcKc=",
+			"path": "github.com/google/go-github/github",
+			"revision": "2b50c3dee76ff3a14edb1cde53bf56e366ab0230",
+			"revisionTime": "2019-02-08T03:53:10Z"
+		},
+		{
+			"path": "github.com/google/go-github/v23/github",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "aDjb3mG2PnOgRgQXVXBxzPNc9I0=",
+			"path": "github.com/google/go-querystring/query",
+			"revision": "44c6ddd0a2342c386950e880b658017258da92fc",
+			"revisionTime": "2018-09-16T13:16:37Z"
+		},
+		{
 			"checksumSHA1": "jwoPNwN+mUiYFQPjQa/U3Kli7Ak=",
 			"path": "github.com/kr/pretty",
 			"revision": "73f6ac0b30a98e433b289500d779f50c1a6f0712",
@@ -67,6 +83,12 @@
 			"path": "github.com/pmezard/go-difflib/difflib",
 			"revision": "792786c7400a136282c1664665ae0a8db921c6c2",
 			"revisionTime": "2016-01-10T10:55:54Z"
+		},
+		{
+			"checksumSHA1": "kXclqYWCr4uIyByXHvv0+MXQ48c=",
+			"path": "github.com/robfig/cron",
+			"revision": "b41be1df696709bb6395fe435af20370037c0b4c",
+			"revisionTime": "2018-05-05T20:34:41Z"
 		},
 		{
 			"checksumSHA1": "oPKohJs9/AhcoNpqxUi1IaDo60I=",
