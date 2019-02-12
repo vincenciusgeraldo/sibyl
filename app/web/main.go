@@ -3,14 +3,15 @@ package main
 import (
 	"fmt"
 	"github.com/subosito/gotenv"
+	"github.com/vincenciusgeraldo/sibyl"
+	"github.com/vincenciusgeraldo/sibyl/pkg/database"
+	"github.com/vincenciusgeraldo/sibyl/pkg/handlers"
+	"github.com/vincenciusgeraldo/sibyl/pkg/repositories"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"log"
 	"os"
 	"time"
-	"github.com/vincenciusgeraldo/sibyl"
-	"github.com/vincenciusgeraldo/sibyl/pkg/database"
-	"github.com/vincenciusgeraldo/sibyl/pkg/repositories"
-	"github.com/vincenciusgeraldo/sibyl/pkg/handlers"
+	"github.com/vincenciusgeraldo/sibyl/pkg/github"
 )
 
 func main() {
@@ -23,6 +24,8 @@ func main() {
 		},
 	})
 
+	client := github.NewConnection()
+
 	db, err := database.NewMongo(os.Getenv("MONGO_HOST"))
 
 	if err != nil {
@@ -34,8 +37,9 @@ func main() {
 
 	usr := repositories.NewUserRepo(db)
 	rvw := repositories.NewReviewRepo(db)
+	pra := github.NewPullRequestInstance(client)
 
-	sbl := sibyl.NewSibyl(b, rvw, usr)
+	sbl := sibyl.NewSibyl(b, rvw, usr, pra)
 
 	ush := handlers.NewUserHandler(sbl)
 	rvh := handlers.NewReviewHandler(sbl)
@@ -52,6 +56,7 @@ func main() {
 	b.Handle("/done", rvh.Delete)
 	b.Handle("/up", rvh.Up)
 	b.Handle("/announce", adm.Announce)
+	b.Handle("/set_role", adm.SetRole)
 
 	b.Start()
 }

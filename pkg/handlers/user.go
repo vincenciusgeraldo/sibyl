@@ -1,9 +1,9 @@
 package handlers
 
 import (
+	"github.com/vincenciusgeraldo/sibyl"
 	"github.com/vincenciusgeraldo/sibyl/pkg/models"
 	tb "gopkg.in/tucnak/telebot.v2"
-	"github.com/vincenciusgeraldo/sibyl"
 	"strconv"
 )
 

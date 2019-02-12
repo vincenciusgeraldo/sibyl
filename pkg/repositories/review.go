@@ -2,8 +2,8 @@ package repositories
 
 import (
 	"github.com/globalsign/mgo"
-	"github.com/vincenciusgeraldo/sibyl/pkg/models"
 	"github.com/globalsign/mgo/bson"
+	"github.com/vincenciusgeraldo/sibyl/pkg/models"
 	"github.com/vincenciusgeraldo/sibyl/pkg/utils"
 	"time"
 )
@@ -28,13 +28,13 @@ func (r *Review) CreateReview(rvw models.Review) (models.Review, error) {
 	return rvw, nil
 }
 
-func (r *Review) GetReviewByRequester(usr string) ([]models.Review, error){
+func (r *Review) GetReviewByRequester(usr string) ([]models.Review, error) {
 	var res []models.Review
 	q := map[string]interface{}{
 		"requester": usr,
 	}
 
-	if err := r.db.C("reviews").Find(q).Sort("created_at").All(&res); err != nil {
+	if err := r.db.C("reviews").Find(q).Sort("emergency","updated_at").All(&res); err != nil {
 		return []models.Review{}, err
 	}
 
@@ -44,14 +44,14 @@ func (r *Review) GetReviewByRequester(usr string) ([]models.Review, error){
 func (r *Review) GetReviewByReviewer(reviewer string, requester string) ([]models.Review, error) {
 	var res []models.Review
 	q := bson.M{
-		"reviewers": bson.M{"$in": []string{reviewer}},
+		"reviewers":   bson.M{"$in": []string{reviewer}},
 		"approved_by": bson.M{"$nin": []string{reviewer}},
 	}
 	if requester != "" {
 		q["requester"] = requester
 	}
 
-	if err := r.db.C("reviews").Find(q).Sort("created_at", "emergency").All(&res); err != nil {
+	if err := r.db.C("reviews").Find(q).Sort("emergency","updated_at").All(&res); err != nil {
 		return []models.Review{}, err
 	}
 
@@ -61,7 +61,23 @@ func (r *Review) GetReviewByReviewer(reviewer string, requester string) ([]model
 func (r *Review) GetReviewBy(by interface{}) ([]models.Review, error) {
 	var res []models.Review
 
-	if err := r.db.C("reviews").Find(by).Sort("created_at", "emergency").All(&res); err != nil {
+	if err := r.db.C("reviews").Find(by).Sort("emergency","updated_at").All(&res); err != nil {
+		return []models.Review{}, err
+	}
+
+	return res, nil
+}
+
+func (r *Review) GetApprovedReview() ([]models.Review, error) {
+	var res []models.Review
+	q := bson.M{
+		"approved_by": bson.M{
+			"$exists": true,
+			"$ne": []string{},
+		},
+	}
+
+	if err := r.db.C("reviews").Find(q).All(&res); err != nil {
 		return []models.Review{}, err
 	}
 
@@ -72,11 +88,11 @@ func (r *Review) Reviewed(pr int, repo string, usr string) (models.Review, error
 	var rev []models.Review
 	q := bson.M{
 		"pr_number": pr,
-		"repo": repo,
+		"repo":      repo,
 	}
 
 	if err := r.db.C("reviews").Find(q).All(&rev); err != nil {
-		return models.Review{},err
+		return models.Review{}, err
 	}
 
 	res := rev[0]
@@ -85,7 +101,7 @@ func (r *Review) Reviewed(pr int, repo string, usr string) (models.Review, error
 	res.UpdatedAt = time.Now()
 
 	if err := r.db.C("reviews").Update(q, res); err != nil {
-		return models.Review{},err
+		return models.Review{}, err
 	}
 
 	return res, nil
@@ -95,11 +111,11 @@ func (r *Review) Approved(pr int, repo string, usr string) (models.Review, error
 	var rev []models.Review
 	q := bson.M{
 		"pr_number": pr,
-		"repo": repo,
+		"repo":      repo,
 	}
 
 	if err := r.db.C("reviews").Find(q).All(&rev); err != nil {
-		return models.Review{},err
+		return models.Review{}, err
 	}
 
 	res := rev[0]
@@ -108,28 +124,28 @@ func (r *Review) Approved(pr int, repo string, usr string) (models.Review, error
 	res.UpdatedAt = time.Now()
 
 	if err := r.db.C("reviews").Update(q, res); err != nil {
-		return models.Review{},err
+		return models.Review{}, err
 	}
 
-	return res,nil
+	return res, nil
 }
 
 func (r *Review) UpReview(pr int, repo string) (models.Review, error) {
 	var rev []models.Review
 	q := bson.M{
 		"pr_number": pr,
-		"repo": repo,
+		"repo":      repo,
 	}
 
 	if err := r.db.C("reviews").Find(q).All(&rev); err != nil {
-		return models.Review{},err
+		return models.Review{}, err
 	}
 
 	res := rev[0]
 	res.UpdatedAt = time.Now()
 
 	if err := r.db.C("reviews").Update(q, res); err != nil {
-		return models.Review{},err
+		return models.Review{}, err
 	}
 
 	return res, nil
@@ -138,7 +154,7 @@ func (r *Review) UpReview(pr int, repo string) (models.Review, error) {
 func (r *Review) DeleteReview(pr int, repo string) error {
 	q := bson.M{
 		"pr_number": pr,
-		"repo": repo,
+		"repo":      repo,
 	}
 
 	if err := r.db.C("reviews").Remove(q); err != nil {

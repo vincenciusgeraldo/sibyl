@@ -14,6 +14,7 @@ type Review struct {
 	ReviewedBy []string      `json:"reviewed_by" bson:"reviewed_by"`
 	ApprovedBy []string      `json:"approved_by" bson:"approved_by"`
 	Emergency  bool          `json:"emergency" bson:"emergency"`
+	PRName     string		 `json:"pr_name" bson:"pr_name"`
 	CreatedAt  time.Time     `json:"created_at" bson:"created_at"`
 	UpdatedAt  time.Time     `json:"updated_at" bson:"updated_at"`
 }

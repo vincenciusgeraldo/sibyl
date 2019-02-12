@@ -2,8 +2,8 @@ package repositories
 
 import (
 	"github.com/globalsign/mgo"
-	"github.com/vincenciusgeraldo/sibyl/pkg/models"
 	"github.com/globalsign/mgo/bson"
+	"github.com/vincenciusgeraldo/sibyl/pkg/models"
 	"time"
 )
 
@@ -21,6 +21,16 @@ func (r *User) CreateUser(usr models.User) (models.User, error) {
 	usr.UpdatedAt = time.Now()
 
 	if err := r.db.C("users").Insert(&usr); err != nil {
+		return models.User{}, err
+	}
+
+	return usr, nil
+}
+
+func (r *User) UpdateUser(usr models.User) (models.User, error) {
+	usr.UpdatedAt = time.Now()
+
+	if err := r.db.C("users").UpdateId(usr.Id, usr); err != nil {
 		return models.User{}, err
 	}
 

@@ -13,4 +13,5 @@ type Review interface {
 	Approved(int, string, string) (models.Review, error)
 	UpReview(int, string) (models.Review, error)
 	DeleteReview(int, string) error
+	GetApprovedReview() ([]models.Review, error)
 }
