@@ -4,6 +4,7 @@ import (
 	"github.com/google/go-github/github"
 	"os"
 	"context"
+	"github.com/vincenciusgeraldo/sibyl/pkg/models"
 )
 
 type PullRequestAPI struct {
@@ -22,4 +23,22 @@ func (pra *PullRequestAPI)GetPullRequest(pr int, repo string) (*github.PullReque
 	}
 
 	return pullRequest, nil
+}
+
+func (pra *PullRequestAPI)GetPullRequestStatus(pr int, repo string) (models.PullRequestStatus, error) {
+	pullRequest, err := pra.GetPullRequest(pr, repo)
+	if err != nil {
+		return models.PullRequestStatus{}, err
+	}
+
+	checkStatuses, _, err := pra.cl.Repositories.GetCombinedStatus(context.Background(), pra.owner, repo, *pullRequest.Head.SHA, &github.ListOptions{})
+	if err != nil {
+		return models.PullRequestStatus{}, err
+	}
+
+	return models.PullRequestStatus{
+		CombinedStatus: checkStatuses,
+		Mergeable: pullRequest.GetMergeable(),
+		MergeableStatus: pullRequest.GetMergeableState(),
+	}, nil
 }

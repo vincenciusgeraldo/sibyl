@@ -5,10 +5,10 @@ import (
 	"github.com/globalsign/mgo/bson"
 	"github.com/vincenciusgeraldo/sibyl"
 	"github.com/vincenciusgeraldo/sibyl/pkg/models"
-	"github.com/vincenciusgeraldo/sibyl/pkg/utils"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"strconv"
 	"strings"
+	"github.com/vincenciusgeraldo/sibyl/pkg/common"
 )
 
 type Review struct {
@@ -52,12 +52,7 @@ func (h *Review) Create(m *tb.Message) {
 		return
 	}
 
-	pr, err := h.sbl.GetPullRequest(prNumber, cmd[1])
-	if err != nil {
-		msg = fmt.Sprintf("PR `%s#%d` tidak terdaftar di github", cmd[1], prNumber)
-		h.sbl.SendMessage(m.Chat, msg)
-		return
-	}
+	pr, _ := h.sbl.GetPullRequest(prNumber, cmd[1])
 
 	emg := false
 	if cmd[0] == "/add_emergency" {
@@ -84,14 +79,14 @@ func (h *Review) Create(m *tb.Message) {
 	}
 
 	if m.Sender.ID != int(m.Chat.ID) {
-		msg = tag + fmt.Sprintf("Kak %s meminta review untuk PR `%s#%d` - `%s` ke %s. Silahkan cek [disini](https://github.com/bukalapak/%s/pull/%d).", review.Requester, cmd[1], prNumber, review.PRName, cmd[3], cmd[1], prNumber)
+		msg = tag + fmt.Sprintf("Kak %s meminta review untuk PR `%s#%d` - `%s` ke %s. PR-nya bisa dilihat [disini](https://github.com/bukalapak/%s/pull/%d).", review.Requester, cmd[1], prNumber, review.PRName, cmd[3], cmd[1], prNumber)
 		h.sbl.SendMessage(m.Chat, msg)
 	} else {
 		msg = tag + fmt.Sprintf("Antrian review untuk `PR %s#%d` berhasil dibuat dan diumumkan.", cmd[1], prNumber)
 		h.sbl.SendMessage(m.Chat, msg)
 	}
 
-	msg = tag + fmt.Sprintf("%s meminta review untuk PR `%s#%d` - `%s`. Silahkan cek [disini](https://github.com/bukalapak/%s/pull/%d).", review.Requester, cmd[1], prNumber, review.PRName, cmd[1], prNumber)
+	msg = tag + fmt.Sprintf("%s meminta review untuk PR `%s#%d` - `%s`. PR-nya bisa dilihat [disini](https://github.com/bukalapak/%s/pull/%d).", review.Requester, cmd[1], prNumber, review.PRName, cmd[1], prNumber)
 	h.sbl.BroadcastMessage(review.Reviewers, msg)
 
 	return
@@ -101,7 +96,6 @@ func (h *Review) MyReview(m *tb.Message) {
 	cmd := strings.Split(m.Text, " ")
 	var res []models.Review
 	var err error
-
 	if len(cmd) == 1 {
 		res, err = h.sbl.GetReviewByReviewer("@"+m.Sender.Username, "")
 	} else if len(cmd) == 2 {
@@ -122,7 +116,7 @@ func (h *Review) MyReview(m *tb.Message) {
 		return
 	}
 
-	h.sbl.SendMessage(m.Chat, h.buildReviewList(res))
+	h.buildReviewList(res, m)
 	return
 }
 
@@ -139,7 +133,7 @@ func (h *Review) MyRequest(m *tb.Message) {
 		return
 	}
 
-	h.sbl.SendMessage(m.Chat, h.buildReviewList(res))
+	h.buildReviewList(res, m)
 	return
 }
 
@@ -177,14 +171,14 @@ func (h *Review) Reviewed(m *tb.Message) {
 	}
 
 	if m.Sender.ID != int(m.Chat.ID) {
-		msg = fmt.Sprintf("Kak %s, PR `%s#%d` - `%s` sudah di _review_ oleh %s. Silahkan cek [disini](https://github.com/bukalapak/%s/pull/%d).", res.Requester, cmd[1], pr, res.PRName, reviewer, cmd[1], pr)
+		msg = fmt.Sprintf("Kak %s, PR `%s#%d` - `%s` sudah di _review_ oleh %s. PR-nya bisa dilihat [disini](https://github.com/bukalapak/%s/pull/%d).", res.Requester, cmd[1], pr, res.PRName, reviewer, cmd[1], pr)
 		h.sbl.SendMessage(m.Chat, msg)
 	} else {
 		msg = fmt.Sprintf("_Review_ untuk PR `%s#%d` berhasil dan telah diumumkan.", cmd[1], pr)
 		h.sbl.SendMessage(m.Chat, msg)
 	}
 
-	msg = fmt.Sprintf("PR `%s#%d` - `%s` sudah di _review_ oleh %s. Silahkan cek [disini](https://github.com/bukalapak/%s/pull/%d).", cmd[1], pr, reviewer, res.PRName, cmd[1], pr)
+	msg = fmt.Sprintf("PR `%s#%d` - `%s` sudah di _review_ oleh %s. PR-nya bisa dilihat [disini](https://github.com/bukalapak/%s/pull/%d).", cmd[1], pr, reviewer, res.PRName, cmd[1], pr)
 	h.sbl.BroadcastMessage([]string{res.Requester}, msg)
 	return
 }
@@ -234,14 +228,14 @@ func (h *Review) Approved(m *tb.Message) {
 	}
 
 	if m.Sender.ID != int(m.Chat.ID) {
-		msg = fmt.Sprintf("Kak %s, PR `%s#%d` - `%s` sudah di _approve_ oleh %s. Silahkan cek [disini](https://github.com/bukalapak/%s/pull/%d).", res.Requester, cmd[1], pr, res.PRName, reviewer, cmd[1], pr)
+		msg = fmt.Sprintf("Kak %s, PR `%s#%d` - `%s` sudah di _approve_ oleh %s. PR-nya bisa dilihat [disini](https://github.com/bukalapak/%s/pull/%d).", res.Requester, cmd[1], pr, res.PRName, reviewer, cmd[1], pr)
 		h.sbl.SendMessage(m.Chat, msg)
 	} else {
 		msg = fmt.Sprintf("_Review_ untuk PR `%s#%d` berhasil dan telah diumumkan.", cmd[1], pr)
 		h.sbl.SendMessage(m.Chat, msg)
 	}
 
-	msg = fmt.Sprintf("PR `%s#%d` - `%s`sudah di _approve_ oleh %s. Silahkan cek [disini](https://github.com/bukalapak/%s/pull/%d).", cmd[1], pr, res.PRName, reviewer, cmd[1], pr)
+	msg = fmt.Sprintf("PR `%s#%d` - `%s` sudah di _approve_ oleh %s. PR-nya bisa dilihat [disini](https://github.com/bukalapak/%s/pull/%d).", cmd[1], pr, res.PRName, reviewer, cmd[1], pr)
 	h.sbl.BroadcastMessage([]string{res.Requester}, msg)
 	return
 }
@@ -286,14 +280,14 @@ func (h *Review) Up(m *tb.Message) {
 	}
 
 	if m.Sender.ID != int(m.Chat.ID) {
-		msg = fmt.Sprintf("Kak %s meminta review untuk PR `%s#%d` - `%s` ke %s. Silahkan cek [disini](https://github.com/bukalapak/%s/pull/%d).", res.Requester, cmd[1], pr, res.PRName, strings.Join(res.Reviewers, " "), cmd[1], pr)
+		msg = fmt.Sprintf("Kak %s meminta review untuk PR `%s#%d` - `%s` ke %s. PR-nya bisa dilihat [disini](https://github.com/bukalapak/%s/pull/%d).", res.Requester, cmd[1], pr, res.PRName, strings.Join(res.Reviewers, " "), cmd[1], pr)
 		h.sbl.SendMessage(m.Chat, msg)
 	} else {
 		msg = fmt.Sprintf("Antrian review untuk PR `%s#%d` berhasil diumumkan.", cmd[1], pr)
 		h.sbl.SendMessage(m.Chat, msg)
 	}
 
-	msg = fmt.Sprintf("%s meminta review untuk PR `%s#%d` - `%s`. Silahkan cek [disini](https://github.com/bukalapak/%s/pull/%d).", res.Requester, cmd[1], pr, res.PRName, cmd[1], pr)
+	msg = fmt.Sprintf("%s meminta review untuk PR `%s#%d` - `%s`. PR-nya bisa dilihat [disini](https://github.com/bukalapak/%s/pull/%d).", res.Requester, cmd[1], pr, res.PRName, cmd[1], pr)
 	h.sbl.BroadcastMessage(res.Reviewers, msg)
 
 	return
@@ -337,34 +331,13 @@ func (h *Review) Delete(m *tb.Message) {
 	return
 }
 
-func (h *Review) buildReviewList(data []models.Review) string {
-	msg := ""
-	prFormat := "`%s#%d` - `%s`"
+func (h *Review) buildReviewList(data []models.Review, m *tb.Message) {
+	msg := "Mohon di tunggu ya.. Sibyl sedang mengambil daftar permintaan review dan status PR nya.."
+	h.sbl.SendMessage(m.Chat, msg)
 	for _, d := range data {
-		prName := d.PRName
-		if prName == "" {
-			prFormat = "`%s#%d`"
-		}
-
-		if d.Emergency {
-			msg += "\xE2\x80\xBC *Emergency* \xE2\x80\xBC\n" +
-				fmt.Sprintf("Antrian PR "+ prFormat +" dari %s memerlukan _review_ secepatnya, Silahkan cek [disini](https://github.com/bukalapak/%s/pull/%d).\n", d.Repo, d.PRNumber, prName, d.Requester, d.Repo, d.PRNumber)
-		} else {
-			msg += fmt.Sprintf("Antrian _review_ PR "+ prFormat +" dari %s. Silahkan cek [disini](https://github.com/bukalapak/%s/pull/%d).\n", d.Repo, d.PRNumber, prName, d.Requester, d.Repo, d.PRNumber)
-		}
-		for _, r := range d.Reviewers {
-			rst := ""
-			if utils.ArrayInclude(d.ApprovedBy, r) {
-				rst = "`approved` \xE2\x9C\x85"
-			} else if utils.ArrayInclude(d.ReviewedBy, r) {
-				rst = "`need changes` \xE2\x9D\x8C"
-			} else {
-				rst = "`not reviewed`"
-			}
-			msg += fmt.Sprintf("- %s - %s\n", r, rst)
-		}
-		msg += "\n\n"
+		check, _ := h.sbl.GetPullRequestStatus(d.PRNumber, d.Repo)
+		h.sbl.SendMessage(m.Chat, common.BuildReview(d, check))
 	}
-	msg += "Urutan prioritas review tertinggi dimulai dari paling bawah. Mohon _reviewer_ untuk memberikan _review_ dimulai dari antrian bawah."
-	return msg
+	msg = "Urutan prioritas review tertinggi dimulai dari paling bawah. Mohon _reviewer_ untuk memberikan _review_ dimulai dari antrian bawah."
+	h.sbl.SendMessage(m.Chat, msg)
 }

@@ -34,7 +34,7 @@ func (r *Review) GetReviewByRequester(usr string) ([]models.Review, error) {
 		"requester": usr,
 	}
 
-	if err := r.db.C("reviews").Find(q).Sort("emergency","updated_at").All(&res); err != nil {
+	if err := r.db.C("reviews").Find(q).Sort("emergency", "created_at", "updated_at").All(&res); err != nil {
 		return []models.Review{}, err
 	}
 
@@ -51,7 +51,7 @@ func (r *Review) GetReviewByReviewer(reviewer string, requester string) ([]model
 		q["requester"] = requester
 	}
 
-	if err := r.db.C("reviews").Find(q).Sort("emergency","updated_at").All(&res); err != nil {
+	if err := r.db.C("reviews").Find(q).Sort("emergency","created_at", "updated_at").All(&res); err != nil {
 		return []models.Review{}, err
 	}
 

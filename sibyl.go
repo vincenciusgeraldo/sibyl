@@ -92,3 +92,7 @@ func (s *Sibyl) DeleteReview(pr int, repo string) error {
 func (s *Sibyl) GetPullRequest(pr int, repo string) (*github.PullRequest, error) {
 	return s.git.GetPullRequest(pr, repo)
 }
+
+func (s *Sibyl) GetPullRequestStatus(pr int, repo string) (models.PullRequestStatus, error) {
+	return s.git.GetPullRequestStatus(pr, repo)
+}
